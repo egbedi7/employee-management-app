@@ -39,7 +39,7 @@ pipeline {
             steps {
                 sh '''
                     sleep 10
-                    curl -f http://localhost:8095/api/employees
+                    curl -f http://employee-management-app:8095/api/employees
                 '''
             }
         }
