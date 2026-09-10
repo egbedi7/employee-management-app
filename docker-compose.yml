@@ -11,6 +11,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - employee-network
 
   employee-app:
     image: employee-management-app:1.0
@@ -23,6 +25,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: employee_password
     depends_on:
       - postgres
+    networks:
+      - employee-network
 
 volumes:
   postgres_data:
+
+networks:
+  employee-network:
+    external: true
