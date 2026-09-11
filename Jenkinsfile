@@ -38,8 +38,22 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                    sleep 10
-                    curl -f http://employee-management-app:8095/api/employees
+                    echo "Waiting for Employee Management API to become ready..."
+
+                    for i in {1..12}
+                    do
+                        if curl -f http://employee-management-app:8095/api/employees
+                        then
+                            echo "Employee Management API is healthy!"
+                            exit 0
+                        fi
+
+                        echo "API not ready yet. Waiting 5 seconds..."
+                        sleep 5
+                    done
+
+                    echo "Health check failed after 60 seconds."
+                    exit 1
                 '''
             }
         }
