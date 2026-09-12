@@ -1,3 +1,4 @@
+```groovy
 pipeline {
 
     agent any
@@ -35,32 +36,44 @@ pipeline {
             }
         }
 
-       stage('Health Check') {
-    steps {
-        sh '''
-            echo "Waiting for Employee Management API to become ready..."
+        stage('Health Check') {
+            steps {
+                sh '''
+                    echo "Waiting for Employee Management API to become ready..."
 
-            i=1
+                    i=1
 
-            while [ $i -le 12 ]
-            do
-                echo "Health check attempt $i..."
+                    while [ $i -le 12 ]
+                    do
+                        echo "Health check attempt $i..."
 
-                if curl --connect-timeout 5 --max-time 10 -f http://employee-management-app:8095/api/employees
-                then
-                    echo "Employee Management API is healthy!"
-                    exit 0
-                fi
+                        if curl --connect-timeout 5 --max-time 10 -f http://employee-management-app:8095/api/employees
+                        then
+                            echo "Employee Management API is healthy!"
+                            exit 0
+                        fi
 
-                echo "API not ready yet. Waiting 5 seconds..."
-                sleep 5
+                        echo "API not ready yet. Waiting 5 seconds..."
+                        sleep 5
 
-                i=$((i + 1))
-            done
+                        i=$((i + 1))
+                    done
 
-            echo "Health check failed after 12 attempts."
-            exit 1
-        '''
-    		}
-	}
+                    echo "Health check failed after 12 attempts."
+                    exit 1
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Employee Management Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Employee Management Pipeline failed.'
+        }
+    }
 }
+```
