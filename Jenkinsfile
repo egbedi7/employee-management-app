@@ -35,38 +35,32 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
-            steps {
-                sh '''
-                    echo "Waiting for Employee Management API to become ready..."
+       stage('Health Check') {
+    steps {
+        sh '''
+            echo "Waiting for Employee Management API to become ready..."
 
-                    for i in {1..12}
-                    do
-                        if curl -f http://employee-management-app:8095/api/employees
-                        then
-                            echo "Employee Management API is healthy!"
-                            exit 0
-                        fi
+            i=1
 
-                        echo "API not ready yet. Waiting 5 seconds..."
-                        sleep 5
-                    done
+            while [ $i -le 12 ]
+            do
+                echo "Health check attempt $i..."
 
-                    echo "Health check failed after 60 seconds."
-                    exit 1
-                '''
-            }
-        }
-    }
+                if curl --connect-timeout 5 --max-time 10 -f http://employee-management-app:8095/api/employees
+                then
+                    echo "Employee Management API is healthy!"
+                    exit 0
+                fi
 
-    post {
-        success {
-            echo 'Employee Management Pipeline completed successfully!'
-        }
+                echo "API not ready yet. Waiting 5 seconds..."
+                sleep 5
 
-        failure {
-            echo 'Employee Management Pipeline failed.'
-        }
-    }
+                i=$((i + 1))
+            done
+
+            echo "Health check failed after 12 attempts."
+            exit 1
+        '''
+    		}
+	}
 }
-
