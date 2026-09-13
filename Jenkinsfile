@@ -57,44 +57,39 @@ pipeline {
 	}
 
 
-        stage('Health Check') {
-            steps {
-                sh '''
-                    echo "Waiting for Employee Management API to become ready..."
+        
+	stage('Health Check') {
+    	   steps {
+             sh '''
+            echo "Waiting for Employee Management API to become ready..."
 
-                    i=1
+            APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' employee-management-app)
 
-                    while [ $i -le 12 ]
-                    do
-                        echo "Health check attempt $i..."
+            echo "Employee Management App IP: $APP_IP"
 
-                        if curl --connect-timeout 5 --max-time 10 -f http://employee-management-app:8095/api/employees
-                        then
-                            echo "Employee Management API is healthy!"
-                            exit 0
-                        fi
+            i=1
 
-                        echo "API not ready yet. Waiting 5 seconds..."
-                        sleep 5
+            while [ $i -le 12 ]
+            do
+                echo "Health check attempt $i..."
 
-                        i=$((i + 1))
-                    done
+                if curl --connect-timeout 5 --max-time 10 -f http://$APP_IP:8095/api/employees
+                then
+                    echo "Employee Management API is healthy!"
+                    exit 0
+                fi
 
-                    echo "Health check failed after 12 attempts."
-                    exit 1
-                '''
-            }
-        }
-    }
+                echo "API not ready yet. Waiting 5 seconds..."
+                sleep 5
 
-    post {
-        success {
-            echo 'Employee Management Pipeline completed successfully!'
-        }
+                i=$((i + 1))
+            done
 
-        failure {
-            echo 'Employee Management Pipeline failed.'
-        }
+            echo "Health check failed after 12 attempts."
+            exit 1
+        '''
     }
 }
+
+
 
