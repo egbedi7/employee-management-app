@@ -34,62 +34,69 @@ pipeline {
                 sh 'docker compose up -d'
             }
         }
-        
-	stage('Debug Docker Network') {
-          steps {
-             sh '''
-            echo "=== Jenkins container ==="
-            docker ps --filter "name=jenkins12"
 
-            echo "=== Employee app container ==="
-            docker ps --filter "name=employee-management-app"
+        stage('Debug Docker Network') {
+            steps {
+                sh '''
+                    echo "=== Jenkins container ==="
+                    docker ps --filter "name=jenkins12"
 
-            echo "=== Employee network ==="
-            docker network inspect employee-network
+                    echo "=== Employee app container ==="
+                    docker ps --filter "name=employee-management-app"
 
-            echo "=== Jenkins network membership ==="
-            docker inspect jenkins12 --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
+                    echo "=== Employee network ==="
+                    docker network inspect employee-network
 
-            echo "=== App network membership ==="
-            docker inspect employee-management-app --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
-        '''
-    	    }
-	}
+                    echo "=== Jenkins network membership ==="
+                    docker inspect jenkins12 --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
 
+                    echo "=== App network membership ==="
+                    docker inspect employee-management-app --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
+                '''
+            }
+        }
 
-        
-	stage('Health Check') {
-    	   steps {
-             sh '''
-            echo "Waiting for Employee Management API to become ready..."
+        stage('Health Check') {
+            steps {
+                sh '''
+                    echo "Waiting for Employee Management API to become ready..."
 
-            APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' employee-management-app)
+                    APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' employee-management-app)
 
-            echo "Employee Management App IP: $APP_IP"
+                    echo "Employee Management App IP: $APP_IP"
 
-            i=1
+                    i=1
 
-            while [ $i -le 12 ]
-            do
-                echo "Health check attempt $i..."
+                    while [ $i -le 12 ]
+                    do
+                        echo "Health check attempt $i..."
 
-                if curl --connect-timeout 5 --max-time 10 -f http://$APP_IP:8095/api/employees
-                then
-                    echo "Employee Management API is healthy!"
-                    exit 0
-                fi
+                        if curl --connect-timeout 5 --max-time 10 -f http://$APP_IP:8095/api/employees
+                        then
+                            echo "Employee Management API is healthy!"
+                            exit 0
+                        fi
 
-                echo "API not ready yet. Waiting 5 seconds..."
-                sleep 5
+                        echo "API not ready yet. Waiting 5 seconds..."
+                        sleep 5
 
-                i=$((i + 1))
-            done
+                        i=$((i + 1))
+                    done
 
-            echo "Health check failed after 12 attempts."
-            exit 1
-        '''
+                    echo "Health check failed after 12 attempts."
+                    exit 1
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Employee Management Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Employee Management Pipeline failed.'
+        }
     }
 }
-
-
-
