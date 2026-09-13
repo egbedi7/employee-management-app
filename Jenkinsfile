@@ -35,27 +35,6 @@ pipeline {
             }
         }
 
-        stage('Debug Docker Network') {
-            steps {
-                sh '''
-                    echo "=== Jenkins container ==="
-                    docker ps --filter "name=jenkins12"
-
-                    echo "=== Employee app container ==="
-                    docker ps --filter "name=employee-management-app"
-
-                    echo "=== Employee network ==="
-                    docker network inspect employee-network
-
-                    echo "=== Jenkins network membership ==="
-                    docker inspect jenkins12 --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
-
-                    echo "=== App network membership ==="
-                    docker inspect employee-management-app --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
-                '''
-            }
-        }
-
         stage('Health Check') {
             steps {
                 sh '''
