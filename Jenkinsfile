@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t employee-management-app:1.0 .'
+                sh 'docker build -t employee-management-app:1 .'
             }
         }
 
