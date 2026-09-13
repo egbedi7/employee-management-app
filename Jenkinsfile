@@ -34,6 +34,27 @@ pipeline {
                 sh 'docker compose up -d'
             }
         }
+        
+	stage('Debug Network') {
+          steps {
+        sh '''
+            echo "=== Jenkins hostname ==="
+            hostname
+
+            echo "=== Jenkins user ==="
+            whoami
+
+            echo "=== DNS resolution ==="
+            getent hosts employee-management-app
+
+            echo "=== Jenkins network interfaces ==="
+            hostname -I
+
+            echo "=== DNS configuration ==="
+            cat /etc/resolv.conf
+        '''
+    }
+}
 
         stage('Health Check') {
             steps {
