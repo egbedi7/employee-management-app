@@ -35,24 +35,26 @@ pipeline {
             }
         }
         
-	stage('Debug Network') {
+	stage('Debug Docker Network') {
           steps {
-        sh '''
-            echo "=== Jenkins hostname ==="
-            hostname
+             sh '''
+            echo "=== Jenkins container ==="
+            docker ps --filter "name=jenkins12"
 
-            echo "=== Jenkins user ==="
-            whoami
+            echo "=== Employee app container ==="
+            docker ps --filter "name=employee-management-app"
 
-            echo "=== DNS resolution ==="
-            getent hosts employee-management-app
+            echo "=== Employee network ==="
+            docker network inspect employee-network
 
-            echo "=== Jenkins network interfaces ==="
-            hostname -I
+            echo "=== Jenkins network membership ==="
+            docker inspect jenkins12 --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
 
-            echo "=== DNS configuration ==="
-            cat /etc/resolv.conf
+            echo "=== App network membership ==="
+            docker inspect employee-management-app --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
         '''
+    }
+}
     }
 }
 
