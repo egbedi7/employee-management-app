@@ -53,10 +53,9 @@ pipeline {
             echo "=== App network membership ==="
             docker inspect employee-management-app --format '{{range $name, $conf := .NetworkSettings.Networks}}{{$name}} -> {{$conf.IPAddress}}{{"\\n"}}{{end}}'
         '''
-    }
-}
-    }
-}
+    	    }
+	}
+
 
         stage('Health Check') {
             steps {
